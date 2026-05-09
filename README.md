@@ -17,7 +17,7 @@ The repository may contain unfinished code, placeholder content, test assets, br
 - Believable extraction from wild plants
 - Data-driven plant profiles
 - Configurable growth and yield behavior
-- Compatibility-friendly structure for future plant mods
+- Compatibility-friendly structure and API for future plant mods
 
 ## Not planned for Botanism
 
