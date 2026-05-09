@@ -13,7 +13,6 @@ namespace Botanism
             api.RegisterItemClass("Propagule", typeof(ItemPropagule));
 
             Mod.Logger.Notification("Botanism loaded");
-            Mod.Logger.Notification("Botanism language test: " + Lang.Get("botanism:hello"));
         }
 
         public override void StartServerSide(ICoreServerAPI api)

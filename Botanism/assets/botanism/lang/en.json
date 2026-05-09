@@ -1,6 +1,4 @@
 {
-  "hello": "hello world!",
-
   "item-propagule": "Plant propagule",
   "item-propagule-named": "{0} propagule",
   "item-propagule-named-material": "{0} {1}",

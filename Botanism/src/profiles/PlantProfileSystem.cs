@@ -117,6 +117,7 @@ namespace Botanism.Profiles
                 }
             }
 
+            // Note to future self: Add a button in the config file to reload profiles without restarting the game. Or a command. Whatever works!
             Mod.Logger.Notification(
                 "Loaded {0} Botanism plant profiles, {1} plant groups, and {2} exact block matches",
                 profilesByCode.Count,
