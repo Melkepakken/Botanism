@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using Vintagestory.API.Common;
 
 namespace Botanism.Profiles
@@ -11,6 +12,15 @@ namespace Botanism.Profiles
 
         private readonly Dictionary<string, PlantProfile> profilesByBlockCode =
             new Dictionary<string, PlantProfile>(StringComparer.OrdinalIgnoreCase);
+
+        private readonly Dictionary<string, PlantProfile> generatedProfilesByBlockCode =
+            new Dictionary<string, PlantProfile>(StringComparer.OrdinalIgnoreCase);
+
+        private readonly HashSet<string> disabledBlockCodes =
+            new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        private readonly List<PlantGroupProfile> plantGroups =
+            new List<PlantGroupProfile>();
 
         public override void AssetsLoaded(ICoreAPI api)
         {
@@ -24,9 +34,34 @@ namespace Botanism.Profiles
                 return null;
             }
 
-            profilesByBlockCode.TryGetValue(blockCode.ToString(), out PlantProfile profile);
+            string normalizedBlockCode = NormalizeCode(blockCode.ToString());
 
-            return profile;
+            if (disabledBlockCodes.Contains(normalizedBlockCode))
+            {
+                return null;
+            }
+
+            if (profilesByBlockCode.TryGetValue(normalizedBlockCode, out PlantProfile exactProfile))
+            {
+                return exactProfile;
+            }
+
+            if (generatedProfilesByBlockCode.TryGetValue(normalizedBlockCode, out PlantProfile generatedProfile))
+            {
+                return generatedProfile;
+            }
+
+            PlantProfile groupProfile = CreateProfileFromMatchingGroup(blockCode);
+
+            if (groupProfile != null)
+            {
+                generatedProfilesByBlockCode[normalizedBlockCode] = groupProfile;
+                profilesByCode[groupProfile.Code] = groupProfile;
+
+                return groupProfile;
+            }
+
+            return null;
         }
 
         public PlantProfile GetProfile(string profileCode)
@@ -45,6 +80,9 @@ namespace Botanism.Profiles
         {
             profilesByCode.Clear();
             profilesByBlockCode.Clear();
+            generatedProfilesByBlockCode.Clear();
+            disabledBlockCodes.Clear();
+            plantGroups.Clear();
 
             Dictionary<AssetLocation, PlantProfileFile> profileFiles =
                 api.Assets.GetMany<PlantProfileFile>(
@@ -56,20 +94,40 @@ namespace Botanism.Profiles
             {
                 PlantProfileFile profileFile = entry.Value;
 
-                if (profileFile?.Profiles == null)
+                if (profileFile == null)
                 {
                     continue;
                 }
 
-                foreach (PlantProfile profile in profileFile.Profiles)
+                if (profileFile.Profiles != null)
                 {
-                    RegisterProfile(entry.Key, profile);
+                    foreach (PlantProfile profile in profileFile.Profiles)
+                    {
+                        RegisterProfile(entry.Key, profile);
+                    }
+                }
+
+                if (profileFile.PlantGroups != null)
+                {
+                    foreach (PlantGroupProfile plantGroup in profileFile.PlantGroups)
+                    {
+                        RegisterPlantGroup(entry.Key, plantGroup);
+                    }
+                }
+
+                if (profileFile.Groups != null)
+                {
+                    foreach (PlantGroupProfile plantGroup in profileFile.Groups)
+                    {
+                        RegisterPlantGroup(entry.Key, plantGroup);
+                    }
                 }
             }
 
             Mod.Logger.Notification(
-                "Loaded {0} Botanism plant profiles matching {1} block codes",
+                "Loaded {0} Botanism plant profiles, {1} plant groups, and {2} exact block matches",
                 profilesByCode.Count,
+                plantGroups.Count,
                 profilesByBlockCode.Count
             );
         }
@@ -95,7 +153,7 @@ namespace Botanism.Profiles
             }
 
             profile.PropagationType = NormalizeSimpleCode(profile.PropagationType, "seed");
-            profile.PlantCategory = NormalizeSimpleCode(profile.PlantCategory, "wildflower");
+            profile.PlantCategory = NormalizeSimpleCode(profile.PlantCategory, "wildFlower");
             profile.PlacementType = NormalizeSimpleCode(profile.PlacementType, "surface");
             profile.Priority = NormalizeSimpleCode(profile.Priority, "v1");
 
@@ -109,9 +167,15 @@ namespace Botanism.Profiles
                 return;
             }
 
+            if (!profile.Enabled)
+            {
+                RegisterDisabledProfile(profile);
+                return;
+            }
+
             if (string.IsNullOrWhiteSpace(profile.DisplayName))
             {
-                profile.DisplayName = profile.Code;
+                profile.DisplayName = CreateDisplayNameFromCode(profile.Code, "", "");
             }
 
             if (profile.Yield < 1)
@@ -123,25 +187,7 @@ namespace Botanism.Profiles
 
             foreach (string rawBlockCode in profile.MatchBlockCodes)
             {
-                string blockCode = NormalizeCode(rawBlockCode);
-
-                if (string.IsNullOrWhiteSpace(blockCode))
-                {
-                    continue;
-                }
-
-                if (profilesByBlockCode.TryGetValue(blockCode, out PlantProfile existingProfile))
-                {
-                    Mod.Logger.Warning(
-                        "Botanism plant profile block code {0} from {1} is already matched by {2}. It will now be matched by {3}.",
-                        blockCode,
-                        sourceFile,
-                        existingProfile.Code,
-                        profile.Code
-                    );
-                }
-
-                profilesByBlockCode[blockCode] = profile;
+                RegisterExactBlockMatch(sourceFile, profile, rawBlockCode);
             }
 
             if (!string.IsNullOrWhiteSpace(profile.TargetBlockCode)
@@ -149,6 +195,239 @@ namespace Botanism.Profiles
             {
                 profilesByBlockCode[profile.TargetBlockCode] = profile;
             }
+        }
+
+        private void RegisterDisabledProfile(PlantProfile profile)
+        {
+            disabledBlockCodes.Add(profile.Code);
+
+            if (!string.IsNullOrWhiteSpace(profile.TargetBlockCode))
+            {
+                disabledBlockCodes.Add(profile.TargetBlockCode);
+            }
+
+            foreach (string rawBlockCode in profile.MatchBlockCodes)
+            {
+                string blockCode = NormalizeCode(rawBlockCode);
+
+                if (!string.IsNullOrWhiteSpace(blockCode))
+                {
+                    disabledBlockCodes.Add(blockCode);
+                }
+            }
+        }
+
+        private void RegisterExactBlockMatch(
+            AssetLocation sourceFile,
+            PlantProfile profile,
+            string rawBlockCode
+        )
+        {
+            string blockCode = NormalizeCode(rawBlockCode);
+
+            if (string.IsNullOrWhiteSpace(blockCode))
+            {
+                return;
+            }
+
+            if (disabledBlockCodes.Contains(blockCode))
+            {
+                return;
+            }
+
+            if (profilesByBlockCode.TryGetValue(blockCode, out PlantProfile existingProfile))
+            {
+                Mod.Logger.Warning(
+                    "Botanism plant profile block code {0} from {1} is already matched by {2}. It will now be matched by {3}.",
+                    blockCode,
+                    sourceFile,
+                    existingProfile.Code,
+                    profile.Code
+                );
+            }
+
+            profilesByBlockCode[blockCode] = profile;
+        }
+
+        private void RegisterPlantGroup(AssetLocation sourceFile, PlantGroupProfile plantGroup)
+        {
+            if (plantGroup == null || !plantGroup.Enabled)
+            {
+                return;
+            }
+
+            plantGroup.Code = NormalizeCode(plantGroup.Code);
+            plantGroup.PlantCategory = NormalizeSimpleCode(plantGroup.PlantCategory, "wildFlower");
+            plantGroup.PropagationType = NormalizeSimpleCode(plantGroup.PropagationType, "seed");
+            plantGroup.PlacementType = NormalizeSimpleCode(plantGroup.PlacementType, "surface");
+            plantGroup.Priority = NormalizeSimpleCode(plantGroup.Priority, "group");
+
+            if (plantGroup.Match == null)
+            {
+                plantGroup.Match = new PlantGroupMatch();
+            }
+
+            if (plantGroup.ValidTools == null)
+            {
+                plantGroup.ValidTools = Array.Empty<string>();
+            }
+
+            if (plantGroup.ExcludeBlockCodes == null)
+            {
+                plantGroup.ExcludeBlockCodes = Array.Empty<string>();
+            }
+
+            if (string.IsNullOrWhiteSpace(plantGroup.Code))
+            {
+                Mod.Logger.Warning(
+                    "Skipped Botanism plant group in {0} because it has no code",
+                    sourceFile
+                );
+
+                return;
+            }
+
+            if (plantGroup.Yield < 1)
+            {
+                plantGroup.Yield = 1;
+            }
+
+            plantGroups.Add(plantGroup);
+        }
+
+        private PlantProfile CreateProfileFromMatchingGroup(AssetLocation blockCode)
+        {
+            foreach (PlantGroupProfile plantGroup in plantGroups)
+            {
+                if (!MatchesPlantGroup(blockCode, plantGroup))
+                {
+                    continue;
+                }
+
+                if (IsExcludedByGroup(blockCode, plantGroup))
+                {
+                    continue;
+                }
+
+                string normalizedBlockCode = NormalizeCode(blockCode.ToString());
+
+                string displayName = plantGroup.DisplayNameMode.Equals(
+                    "fromBlockCode",
+                    StringComparison.OrdinalIgnoreCase
+                )
+                    ? CreateDisplayNameFromCode(
+                        normalizedBlockCode,
+                        plantGroup.RemovePathPrefix,
+                        plantGroup.RemovePathSuffix
+                    )
+                    : normalizedBlockCode;
+
+                return new PlantProfile
+                {
+                    Code = normalizedBlockCode,
+                    DisplayName = displayName,
+                    PlantCategory = plantGroup.PlantCategory,
+                    PropagationType = plantGroup.PropagationType,
+                    PlacementType = plantGroup.PlacementType,
+                    Priority = plantGroup.Priority,
+                    TargetBlockCode = string.IsNullOrWhiteSpace(plantGroup.TargetBlockCode)
+                        ? normalizedBlockCode
+                        : NormalizeCode(plantGroup.TargetBlockCode),
+                    MatchBlockCodes = new[] { normalizedBlockCode },
+                    Yield = plantGroup.Yield,
+                    ValidTools = plantGroup.ValidTools,
+                    Enabled = true
+                };
+            }
+
+            return null;
+        }
+
+        private static bool MatchesPlantGroup(AssetLocation blockCode, PlantGroupProfile plantGroup)
+        {
+            PlantGroupMatch match = plantGroup.Match;
+
+            if (!string.IsNullOrWhiteSpace(match.Domain)
+                && !blockCode.Domain.Equals(match.Domain, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            string path = blockCode.Path ?? "";
+
+            if (!string.IsNullOrWhiteSpace(match.PathStartsWith)
+                && !path.StartsWith(match.PathStartsWith, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            if (!string.IsNullOrWhiteSpace(match.PathEndsWith)
+                && !path.EndsWith(match.PathEndsWith, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            if (!string.IsNullOrWhiteSpace(match.PathContains)
+                && path.IndexOf(match.PathContains, StringComparison.OrdinalIgnoreCase) < 0)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        private static bool IsExcludedByGroup(AssetLocation blockCode, PlantGroupProfile plantGroup)
+        {
+            string normalizedBlockCode = NormalizeCode(blockCode.ToString());
+
+            foreach (string rawExcludedBlockCode in plantGroup.ExcludeBlockCodes)
+            {
+                string excludedBlockCode = NormalizeCode(rawExcludedBlockCode);
+
+                if (normalizedBlockCode.Equals(excludedBlockCode, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static string CreateDisplayNameFromCode(
+            string code,
+            string removePathPrefix,
+            string removePathSuffix
+        )
+        {
+            string path = code;
+
+            int domainSeparatorIndex = path.IndexOf(':');
+
+            if (domainSeparatorIndex >= 0 && domainSeparatorIndex < path.Length - 1)
+            {
+                path = path.Substring(domainSeparatorIndex + 1);
+            }
+
+            if (!string.IsNullOrWhiteSpace(removePathPrefix)
+                && path.StartsWith(removePathPrefix, StringComparison.OrdinalIgnoreCase))
+            {
+                path = path.Substring(removePathPrefix.Length);
+            }
+
+            if (!string.IsNullOrWhiteSpace(removePathSuffix)
+                && path.EndsWith(removePathSuffix, StringComparison.OrdinalIgnoreCase))
+            {
+                path = path.Substring(0, path.Length - removePathSuffix.Length);
+            }
+
+            path = path.Replace("-", " ").Trim();
+
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                return code;
+            }
+
+            return CultureInfo.InvariantCulture.TextInfo.ToTitleCase(path);
         }
 
         private static string NormalizeCode(string code)

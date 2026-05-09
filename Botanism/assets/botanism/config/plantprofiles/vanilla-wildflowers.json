@@ -250,7 +250,7 @@
       "targetBlockCode": "game:flower-wilddaisy-free",
       "matchBlockCodes": [ "game:flower-wilddaisy-free", "game:flower-wilddaisy-snow" ],
       "yield": 2,
-      "validTools": [ "knife" ]
+      "validTools": [ "knife" ],
     },
     {
       "code": "game:flower-woad",

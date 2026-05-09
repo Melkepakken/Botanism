@@ -1,0 +1,26 @@
+{
+  "plantGroups": [
+    {
+      "code": "exampleflowers:simple-wildflowers",
+      "description": "Example only. Enables simple seed propagation for flower blocks from a fictional mod",
+      "enabled": false,
+
+      "match": {
+        "domain": "exampleflowers",
+        "pathStartsWith": "flower-",
+        "pathEndsWith": "-free"
+      },
+
+      "displayNameMode": "fromBlockCode",
+      "removePathPrefix": "flower-",
+      "removePathSuffix": "-free",
+
+      "plantCategory": "wildFlower",
+      "propagationType": "seed",
+      "placementType": "surface",
+      "priority": "example",
+      "yield": 2,
+      "validTools": [ "knife" ]
+    }
+  ]
+}
