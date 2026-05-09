@@ -76,16 +76,23 @@ public sealed class BuildTask : FrostingTask<BuildContext>
 {
     public override void Run(BuildContext context)
     {
-        context.DotNetClean($"../{BuildContext.ProjectName}/{BuildContext.ProjectName}.csproj",
+        var projectFile = $"../{BuildContext.ProjectName}/{BuildContext.ProjectName}.csproj";
+        var publishDirectory = $"../{BuildContext.ProjectName}/bin/{context.BuildConfiguration}/CakePublish";
+
+        context.DotNetClean(projectFile,
             new DotNetCleanSettings
             {
                 Configuration = context.BuildConfiguration
             });
 
-        context.DotNetPublish($"../{BuildContext.ProjectName}/{BuildContext.ProjectName}.csproj",
+        context.EnsureDirectoryExists(publishDirectory);
+        context.CleanDirectory(publishDirectory);
+
+        context.DotNetPublish(projectFile,
             new DotNetPublishSettings
             {
-                Configuration = context.BuildConfiguration
+                Configuration = context.BuildConfiguration,
+                OutputDirectory = publishDirectory
             });
     }
 }
@@ -99,12 +106,13 @@ public sealed class PackageTask : FrostingTask<BuildContext>
         context.EnsureDirectoryExists("../Releases");
         context.CleanDirectory("../Releases");
 
+        var publishDirectory = $"../{BuildContext.ProjectName}/bin/{context.BuildConfiguration}/CakePublish";
         var releaseDirectory = $"../Releases/{context.Name}";
 
         context.EnsureDirectoryExists(releaseDirectory);
 
         context.CopyFiles(
-            $"../{BuildContext.ProjectName}/bin/{context.BuildConfiguration}/Mods/mod/publish/*",
+            $"{publishDirectory}/*",
             releaseDirectory
         );
 
