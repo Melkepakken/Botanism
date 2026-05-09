@@ -6,11 +6,8 @@ namespace Botanism.Profiles
     {
         public PlantProfile[] Profiles { get; set; } = Array.Empty<PlantProfile>();
 
-        // Preferred public JSON name.
         public PlantGroupProfile[] PlantGroups { get; set; } = Array.Empty<PlantGroupProfile>();
 
-        // Older/internal alias, in case I ever used "groups" while testing.
-        public PlantGroupProfile[] Groups { get; set; } = Array.Empty<PlantGroupProfile>();
     }
 
     public class PlantProfile
