@@ -108,10 +108,7 @@ public sealed class PackageTask : FrostingTask<BuildContext>
             releaseDirectory
         );
 
-        // .deps.json is .NET dependency metadata from publish output.
-        // PDB files are debug symbols, and XML files are typically code documentation. All of these are unnecessary for the end user and can be safely excluded to reduce the mod package size.
-        // XML files can also contain sensitive information if they include documentation comments, so it's a good practice to exclude them from the final mod package as well.
-        // Vintage Story code mods do not need it in the final mod zip.
+        // .deps.json, PDB and XML files are not needed for the mod to function and only increase the size of the final zip, so we can safely delete them.
         context.DeleteFiles($"{releaseDirectory}/*.deps.json");
         context.DeleteFiles($"{releaseDirectory}/*.pdb");
         context.DeleteFiles($"{releaseDirectory}/*.xml");

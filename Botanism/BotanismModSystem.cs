@@ -7,7 +7,7 @@ namespace Botanism
 {
     public class BotanismModSystem : ModSystem
     {
-        // Called on server and client
+        // Temporary startup logs while the mod foundation is being set up.
         public override void Start(ICoreAPI api)
         {
             Mod.Logger.Notification("Botanism loaded");
