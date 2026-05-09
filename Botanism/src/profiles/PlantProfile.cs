@@ -5,9 +5,7 @@ namespace Botanism.Profiles
     public class PlantProfileFile
     {
         public PlantProfile[] Profiles { get; set; } = Array.Empty<PlantProfile>();
-
         public PlantGroupProfile[] PlantGroups { get; set; } = Array.Empty<PlantGroupProfile>();
-
     }
 
     public class PlantProfile
@@ -17,7 +15,6 @@ namespace Botanism.Profiles
         public string PlantCategory { get; set; } = "wildFlower";
         public string PropagationType { get; set; } = "seed";
         public string PlacementType { get; set; } = "surface";
-        public string Priority { get; set; } = "v1";
         public string TargetBlockCode { get; set; } = "";
         public string[] MatchBlockCodes { get; set; } = Array.Empty<string>();
         public int Yield { get; set; } = 2;
@@ -63,7 +60,6 @@ namespace Botanism.Profiles
         public string PlantCategory { get; set; } = "wildFlower";
         public string PropagationType { get; set; } = "seed";
         public string PlacementType { get; set; } = "surface";
-        public string Priority { get; set; } = "group";
 
         public int Yield { get; set; } = 2;
         public string[] ValidTools { get; set; } = Array.Empty<string>();

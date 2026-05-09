@@ -18,7 +18,6 @@
       "plantCategory": "wildFlower",
       "propagationType": "seed",
       "placementType": "surface",
-      "priority": "example",
       "yield": 2,
       "validTools": [ "knife" ]
     }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using Vintagestory.API.Common;
+using Vintagestory.API.Config;
 
 namespace Botanism.Profiles
 {
@@ -114,14 +115,6 @@ namespace Botanism.Profiles
                         RegisterPlantGroup(entry.Key, plantGroup);
                     }
                 }
-
-                if (profileFile.Groups != null)
-                {
-                    foreach (PlantGroupProfile plantGroup in profileFile.Groups)
-                    {
-                        RegisterPlantGroup(entry.Key, plantGroup);
-                    }
-                }
             }
 
             Mod.Logger.Notification(
@@ -155,7 +148,6 @@ namespace Botanism.Profiles
             profile.PropagationType = NormalizeSimpleCode(profile.PropagationType, "seed");
             profile.PlantCategory = NormalizeSimpleCode(profile.PlantCategory, "wildFlower");
             profile.PlacementType = NormalizeSimpleCode(profile.PlacementType, "surface");
-            profile.Priority = NormalizeSimpleCode(profile.Priority, "v1");
 
             if (string.IsNullOrWhiteSpace(profile.Code))
             {
@@ -260,7 +252,6 @@ namespace Botanism.Profiles
             plantGroup.PlantCategory = NormalizeSimpleCode(plantGroup.PlantCategory, "wildFlower");
             plantGroup.PropagationType = NormalizeSimpleCode(plantGroup.PropagationType, "seed");
             plantGroup.PlacementType = NormalizeSimpleCode(plantGroup.PlacementType, "surface");
-            plantGroup.Priority = NormalizeSimpleCode(plantGroup.Priority, "group");
 
             if (plantGroup.Match == null)
             {
@@ -311,7 +302,8 @@ namespace Botanism.Profiles
 
                 string normalizedBlockCode = NormalizeCode(blockCode.ToString());
 
-                string displayName = plantGroup.DisplayNameMode.Equals(
+                string displayName = string.Equals(
+                    plantGroup.DisplayNameMode,
                     "fromBlockCode",
                     StringComparison.OrdinalIgnoreCase
                 )
@@ -329,7 +321,6 @@ namespace Botanism.Profiles
                     PlantCategory = plantGroup.PlantCategory,
                     PropagationType = plantGroup.PropagationType,
                     PlacementType = plantGroup.PlacementType,
-                    Priority = plantGroup.Priority,
                     TargetBlockCode = string.IsNullOrWhiteSpace(plantGroup.TargetBlockCode)
                         ? normalizedBlockCode
                         : NormalizeCode(plantGroup.TargetBlockCode),
@@ -399,6 +390,13 @@ namespace Botanism.Profiles
             string removePathSuffix
         )
         {
+            string translatedName = GetTranslatedBlockName(code);
+
+            if (!string.IsNullOrWhiteSpace(translatedName))
+            {
+                return translatedName;
+            }
+
             string path = code;
 
             int domainSeparatorIndex = path.IndexOf(':');
@@ -428,6 +426,30 @@ namespace Botanism.Profiles
             }
 
             return CultureInfo.InvariantCulture.TextInfo.ToTitleCase(path);
+        }
+
+        private static string GetTranslatedBlockName(string code)
+        {
+            AssetLocation blockCode = new AssetLocation(code);
+
+            string[] langKeys =
+            {
+                "block-" + blockCode.Domain + "-" + blockCode.Path,
+                "block-" + blockCode.Path
+            };
+
+            foreach (string langKey in langKeys)
+            {
+                string translatedName = Lang.GetMatchingIfExists(langKey);
+
+                if (!string.IsNullOrWhiteSpace(translatedName)
+                    && !translatedName.Equals(langKey, StringComparison.OrdinalIgnoreCase))
+                {
+                    return translatedName;
+                }
+            }
+
+            return "";
         }
 
         private static string NormalizeCode(string code)
