@@ -9,7 +9,7 @@
                 "build",
                 "-c",
                 "Debug",
-                "${workspaceFolder}/ModTemplate/ModTemplate.csproj"
+                "${workspaceFolder}/Botanism/Botanism.csproj"
             ],
             "problemMatcher": "$msCompile"
         },
