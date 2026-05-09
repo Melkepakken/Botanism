@@ -35,7 +35,9 @@ public class BuildContext : FrostingContext
     {
         BuildConfiguration = context.Argument("configuration", "Release");
         SkipJsonValidation = context.Argument("skipJsonValidation", false);
+
         var modInfo = context.DeserializeJsonFromFile<ModInfo>($"../{BuildContext.ProjectName}/modinfo.json");
+
         Version = modInfo.Version;
         Name = modInfo.ModID;
     }
@@ -50,7 +52,9 @@ public sealed class ValidateJsonTask : FrostingTask<BuildContext>
         {
             return;
         }
+
         var jsonFiles = context.GetFiles($"../{BuildContext.ProjectName}/assets/**/*.json");
+
         foreach (var file in jsonFiles)
         {
             try
@@ -78,7 +82,6 @@ public sealed class BuildTask : FrostingTask<BuildContext>
                 Configuration = context.BuildConfiguration
             });
 
-
         context.DotNetPublish($"../{BuildContext.ProjectName}/{BuildContext.ProjectName}.csproj",
             new DotNetPublishSettings
             {
@@ -95,15 +98,46 @@ public sealed class PackageTask : FrostingTask<BuildContext>
     {
         context.EnsureDirectoryExists("../Releases");
         context.CleanDirectory("../Releases");
-        context.EnsureDirectoryExists($"../Releases/{context.Name}");
-        context.CopyFiles($"../{BuildContext.ProjectName}/bin/{context.BuildConfiguration}/Mods/mod/publish/*", $"../Releases/{context.Name}");
-        context.CopyDirectory($"../{BuildContext.ProjectName}/assets", $"../Releases/{context.Name}/assets");
-        context.CopyFile($"../{BuildContext.ProjectName}/modinfo.json", $"../Releases/{context.Name}/modinfo.json");
+
+        var releaseDirectory = $"../Releases/{context.Name}";
+
+        context.EnsureDirectoryExists(releaseDirectory);
+
+        context.CopyFiles(
+            $"../{BuildContext.ProjectName}/bin/{context.BuildConfiguration}/Mods/mod/publish/*",
+            releaseDirectory
+        );
+
+        // .deps.json is .NET dependency metadata from publish output.
+        // PDB files are debug symbols, and XML files are typically code documentation. All of these are unnecessary for the end user and can be safely excluded to reduce the mod package size.
+        // XML files can also contain sensitive information if they include documentation comments, so it's a good practice to exclude them from the final mod package as well.
+        // Vintage Story code mods do not need it in the final mod zip.
+        context.DeleteFiles($"{releaseDirectory}/*.deps.json");
+        context.DeleteFiles($"{releaseDirectory}/*.pdb");
+        context.DeleteFiles($"{releaseDirectory}/*.xml");
+
+        context.CopyDirectory(
+            $"../{BuildContext.ProjectName}/assets",
+            $"{releaseDirectory}/assets"
+        );
+
+        context.CopyFile(
+            $"../{BuildContext.ProjectName}/modinfo.json",
+            $"{releaseDirectory}/modinfo.json"
+        );
+
         if (context.FileExists($"../{BuildContext.ProjectName}/modicon.png"))
         {
-            context.CopyFile($"../{BuildContext.ProjectName}/modicon.png", $"../Releases/{context.Name}/modicon.png");
+            context.CopyFile(
+                $"../{BuildContext.ProjectName}/modicon.png",
+                $"{releaseDirectory}/modicon.png"
+            );
         }
-        context.Zip($"../Releases/{context.Name}", $"../Releases/{context.Name}_{context.Version}.zip");
+
+        context.Zip(
+            releaseDirectory,
+            $"../Releases/{context.Name}_{context.Version}.zip"
+        );
     }
 }
 
