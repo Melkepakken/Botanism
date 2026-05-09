@@ -33,9 +33,11 @@
 		<Content Include="assets\**">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
+		<Compile Remove="src\PlantExtractionSystem.cs" />
 		<Content Include="modinfo.json">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
+		<Content Include="src\systems\PlantExtractionSystem.cs" />
 	</ItemGroup>
 
 </Project>
