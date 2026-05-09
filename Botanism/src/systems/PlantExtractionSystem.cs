@@ -1,11 +1,15 @@
-﻿using System;
-using Vintagestory.API.Common;
+﻿using Vintagestory.API.Common;
+using Vintagestory.API.Datastructures;
 using Vintagestory.API.Server;
 
 namespace Botanism.Systems
 {
     public class PlantExtractionSystem : ModSystem
     {
+        private const int PrototypeYield = 2;
+
+        private static readonly AssetLocation PropaguleItemCode = new AssetLocation("botanism", "propagule");
+
         private ICoreServerAPI sapi;
 
         public override bool ShouldLoad(EnumAppSide forSide)
@@ -54,10 +58,15 @@ namespace Botanism.Systems
                 return;
             }
 
-            ItemStack[] drops = block.GetDrops(sapi.World, blockSel.Position, byPlayer, 1f);
+            Item propaguleItem = sapi.World.GetItem(PropaguleItemCode);
 
-            if (drops == null || drops.Length == 0)
+            if (propaguleItem == null)
             {
+                Mod.Logger.Warning(
+                    "Botanism could not find item {0}. Plant extraction was skipped.",
+                    PropaguleItemCode
+                );
+
                 return;
             }
 
@@ -69,28 +78,25 @@ namespace Botanism.Systems
             // Block id 0 is air.
             sapi.World.BlockAccessor.SetBlock(0, blockSel.Position);
 
-            foreach (ItemStack drop in drops)
+            ItemStack propaguleStack = new ItemStack(propaguleItem, PrototypeYield);
+
+            // Temporary metadata for the future profile/growth system.
+            // The item name is still generic for now.
+            propaguleStack.Attributes.SetString("sourcePlantCode", block.Code.ToString());
+            propaguleStack.Attributes.SetString("targetPlantCode", block.Code.ToString());
+            propaguleStack.Attributes.SetString("propagationType", "generic");
+
+            bool addedToInventory = byPlayer.InventoryManager.TryGiveItemstack(propaguleStack, true);
+
+            if (!addedToInventory)
             {
-                if (drop == null)
-                {
-                    continue;
-                }
-
-                // Temporary prototype behavior:
-                // One wild plant becomes at least two plant items.
-                drop.StackSize = Math.Max(2, drop.StackSize);
-
-                bool addedToInventory = byPlayer.InventoryManager.TryGiveItemstack(drop, true);
-
-                if (!addedToInventory)
-                {
-                    sapi.World.SpawnItemEntity(drop, blockSel.Position);
-                }
+                sapi.World.SpawnItemEntity(propaguleStack, blockSel.Position);
             }
 
             Mod.Logger.Notification(
-                "Botanism prototype extraction: {0} extracted from {1}",
+                "Botanism prototype extraction: {0} extracted {1} from {2}",
                 byPlayer.PlayerName,
+                PropaguleItemCode,
                 block.Code
             );
         }
