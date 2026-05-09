@@ -1,0 +1,13 @@
+{
+  "type": "code",
+  "modid": "botanism",
+  "name": "Botanism",
+  "authors": [
+    "Melkepakken"
+  ],
+  "description": "Adds believable propagation and cultivation for wild plants and flowers",
+  "version": "0.1.0",
+  "dependencies": {
+    "game": ""
+  }
+}
