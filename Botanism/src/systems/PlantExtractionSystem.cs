@@ -105,7 +105,7 @@ namespace Botanism.Systems
         {
             EnumTool? activeTool = player.InventoryManager.ActiveTool;
 
-            return activeTool == EnumTool.Knife || activeTool == EnumTool.Shears;
+            return activeTool == EnumTool.Knife;
         }
 
         private static bool IsPrototypePlant(Block block)
