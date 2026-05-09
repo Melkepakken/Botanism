@@ -1,16 +1,15 @@
-﻿using Vintagestory.API.Common;
-using Vintagestory.API.Datastructures;
+﻿using Botanism.Profiles;
+using Vintagestory.API.Common;
 using Vintagestory.API.Server;
 
 namespace Botanism.Systems
 {
     public class PlantExtractionSystem : ModSystem
     {
-        private const int PrototypeYield = 2;
-
         private static readonly AssetLocation PropaguleItemCode = new AssetLocation("botanism", "propagule");
 
         private ICoreServerAPI sapi;
+        private PlantProfileSystem plantProfiles;
 
         public override bool ShouldLoad(EnumAppSide forSide)
         {
@@ -20,6 +19,7 @@ namespace Botanism.Systems
         public override void StartServerSide(ICoreServerAPI api)
         {
             sapi = api;
+            plantProfiles = api.ModLoader.GetModSystem<PlantProfileSystem>();
 
             sapi.Event.BreakBlock += OnBreakBlock;
 
@@ -46,14 +46,20 @@ namespace Botanism.Systems
                 return;
             }
 
-            if (!IsPropagationTool(byPlayer))
+            if (plantProfiles == null)
             {
                 return;
             }
 
             Block block = blockSel.Block;
+            PlantProfile profile = plantProfiles.GetProfileForBlock(block.Code);
 
-            if (!IsPrototypePlant(block))
+            if (profile == null)
+            {
+                return;
+            }
+
+            if (!IsPropagationTool(byPlayer, profile))
             {
                 return;
             }
@@ -70,21 +76,24 @@ namespace Botanism.Systems
                 return;
             }
 
-            // We are handling this ourselves now.
-            // This prevents vanilla from also breaking/dropping the block.
             handling = EnumHandling.PreventDefault;
 
             // Remove the wild plant from the world.
             // Block id 0 is air.
             sapi.World.BlockAccessor.SetBlock(0, blockSel.Position);
 
-            ItemStack propaguleStack = new ItemStack(propaguleItem, PrototypeYield);
+            ItemStack propaguleStack = new ItemStack(propaguleItem, profile.Yield);
 
-            // Temporary metadata for the future profile/growth system.
-            // The item name is still generic for now.
+            string targetBlockCode = string.IsNullOrWhiteSpace(profile.TargetBlockCode)
+                ? block.Code.ToString()
+                : profile.TargetBlockCode;
+
+            propaguleStack.Attributes.SetString("profileCode", profile.Code);
+            propaguleStack.Attributes.SetString("plantDisplayName", profile.DisplayName);
+            propaguleStack.Attributes.SetString("plantCategory", profile.PlantCategory);
             propaguleStack.Attributes.SetString("sourcePlantCode", block.Code.ToString());
-            propaguleStack.Attributes.SetString("targetPlantCode", block.Code.ToString());
-            propaguleStack.Attributes.SetString("propagationType", "generic");
+            propaguleStack.Attributes.SetString("targetPlantCode", targetBlockCode);
+            propaguleStack.Attributes.SetString("propagationType", profile.PropagationType);
 
             bool addedToInventory = byPlayer.InventoryManager.TryGiveItemstack(propaguleStack, true);
 
@@ -94,29 +103,31 @@ namespace Botanism.Systems
             }
 
             Mod.Logger.Notification(
-                "Botanism prototype extraction: {0} extracted {1} from {2}",
+                "Botanism extraction: {0} extracted {1} {2} from {3}",
                 byPlayer.PlayerName,
-                PropaguleItemCode,
+                profile.Yield,
+                profile.Code,
                 block.Code
             );
         }
 
-        private static bool IsPropagationTool(IServerPlayer player)
+        private static bool IsPropagationTool(IServerPlayer player, PlantProfile profile)
+        {
+            string activeToolCode = GetActiveToolCode(player);
+
+            return profile.AllowsTool(activeToolCode);
+        }
+
+        private static string GetActiveToolCode(IServerPlayer player)
         {
             EnumTool? activeTool = player.InventoryManager.ActiveTool;
 
-            return activeTool == EnumTool.Knife;
-        }
-
-        private static bool IsPrototypePlant(Block block)
-        {
-            string path = block.Code?.Path ?? "";
-
-            // Current prototype target:
-            // vanilla free-standing plant blocks like game:flower-cornflower-free and game:flower-horsetail-free
-            return block.Code?.Domain == "game"
-                && path.StartsWith("flower-")
-                && path.EndsWith("-free");
+            return activeTool switch
+            {
+                EnumTool.Knife => "knife",
+                EnumTool.Shears => "shears",
+                _ => ""
+            };
         }
     }
 }

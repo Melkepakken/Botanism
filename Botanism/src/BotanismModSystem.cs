@@ -1,4 +1,5 @@
-﻿using Vintagestory.API.Client;
+﻿using Botanism.Items;
+using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.API.Server;
@@ -7,9 +8,10 @@ namespace Botanism
 {
     public class BotanismModSystem : ModSystem
     {
-        // Called on server and client
         public override void Start(ICoreAPI api)
         {
+            api.RegisterItemClass("Propagule", typeof(ItemPropagule));
+
             Mod.Logger.Notification("Botanism loaded");
             Mod.Logger.Notification("Botanism language test: " + Lang.Get("botanism:hello"));
         }

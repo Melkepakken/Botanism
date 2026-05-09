@@ -1,4 +1,29 @@
 {
   "hello": "hello world!",
-  "item-propagule": "Plant propagule"
+
+  "item-propagule": "Plant propagule",
+  "item-propagule-named": "{0} propagule",
+  "item-propagule-named-material": "{0} {1}",
+  "item-propagule-source": "Source plant: {0}",
+  "item-propagule-type": "Propagation: {0}",
+
+  "propagation-type-generic": "Propagule",
+  "propagation-type-seed": "Seed",
+  "propagation-type-bulb": "Bulb",
+  "propagation-type-spore": "Spore",
+  "propagation-type-rhizome": "Rhizome",
+  "propagation-type-pip": "Pip",
+  "propagation-type-cutting": "Cutting",
+  "propagation-type-division": "Division",
+  "propagation-type-fragment": "Fragment",
+
+  "propagule-material-generic": "propagules",
+  "propagule-material-seed": "seeds",
+  "propagule-material-bulb": "bulbs",
+  "propagule-material-spore": "spores",
+  "propagule-material-rhizome": "rhizomes",
+  "propagule-material-pip": "pips",
+  "propagule-material-cutting": "cuttings",
+  "propagule-material-division": "divisions",
+  "propagule-material-fragment": "fragments"
 }
