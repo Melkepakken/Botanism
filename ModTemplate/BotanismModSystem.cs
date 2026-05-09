@@ -3,24 +3,25 @@ using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.API.Server;
 
-namespace ModTemplate
+namespace Botanism
 {
-    public class ModTemplateModSystem : ModSystem
+    public class BotanismModSystem : ModSystem
     {
         // Called on server and client
         public override void Start(ICoreAPI api)
         {
-            Mod.Logger.Notification("Hello from template mod: " + Lang.Get("mymodid:hello"));
+            Mod.Logger.Notification("Botanism loaded");
+            Mod.Logger.Notification("Botanism language test: " + Lang.Get("botanism:hello"));
         }
 
         public override void StartServerSide(ICoreServerAPI api)
         {
-            Mod.Logger.Notification("Hello from template mod server side");
+            Mod.Logger.Notification("Botanism server systems initialized");
         }
 
         public override void StartClientSide(ICoreClientAPI api)
         {
-            Mod.Logger.Notification("Hello from template mod client side");
+            Mod.Logger.Notification("Botanism client systems initialized");
         }
     }
 }
