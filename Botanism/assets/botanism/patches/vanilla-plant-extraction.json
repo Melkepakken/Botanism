@@ -1,0 +1,22 @@
+[
+  {
+    "op": "addmerge",
+    "file": "game:blocktypes/plant/flower.json",
+    "path": "/behaviors",
+    "value": [
+      {
+        "name": "PropaguleExtraction"
+      }
+    ]
+  },
+  {
+    "op": "addmerge",
+    "file": "game:blocktypes/plant/flower-lupine.json",
+    "path": "/behaviors",
+    "value": [
+      {
+        "name": "PropaguleExtraction"
+      }
+    ]
+  }
+]

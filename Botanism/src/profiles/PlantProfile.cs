@@ -18,6 +18,7 @@ namespace Botanism.Profiles
         public string TargetBlockCode { get; set; } = "";
         public string[] MatchBlockCodes { get; set; } = Array.Empty<string>();
         public int Yield { get; set; } = 2;
+        public float ExtractionSeconds { get; set; } = 4f;
         public string[] ValidTools { get; set; } = Array.Empty<string>();
         public bool Enabled { get; set; } = true;
 
@@ -61,10 +62,11 @@ namespace Botanism.Profiles
         public string PropagationType { get; set; } = "seed";
         public string PlacementType { get; set; } = "surface";
 
+        public string TargetBlockCode { get; set; } = "";
         public int Yield { get; set; } = 2;
+        public float ExtractionSeconds { get; set; } = 4f;
         public string[] ValidTools { get; set; } = Array.Empty<string>();
 
-        public string TargetBlockCode { get; set; } = "";
         public string[] ExcludeBlockCodes { get; set; } = Array.Empty<string>();
     }
 

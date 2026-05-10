@@ -18,7 +18,9 @@
       "plantCategory": "wildFlower",
       "propagationType": "seed",
       "placementType": "surface",
+      "targetBlockCode": "",
       "yield": 2,
+      "extractionSeconds": 3,
       "validTools": [ "knife" ]
     }
   ]

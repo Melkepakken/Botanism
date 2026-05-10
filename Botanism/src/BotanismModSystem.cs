@@ -1,5 +1,6 @@
-﻿using Botanism.Items;
+﻿using Botanism.BlockBehaviors;
 using Botanism.BlockEntities;
+using Botanism.Items;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Server;
@@ -12,6 +13,7 @@ namespace Botanism
         {
             api.RegisterItemClass("Propagule", typeof(ItemPropagule));
             api.RegisterBlockEntityClass("PlantedPropagule", typeof(BlockEntityPlantedPropagule));
+            api.RegisterBlockBehaviorClass("PropaguleExtraction", typeof(BlockBehaviorPropaguleExtraction));
 
             Mod.Logger.Notification("Botanism loaded");
         }

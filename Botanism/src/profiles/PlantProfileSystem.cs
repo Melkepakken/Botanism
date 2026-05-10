@@ -8,6 +8,8 @@ namespace Botanism.Profiles
 {
     public class PlantProfileSystem : ModSystem
     {
+        private const float DefaultExtractionSeconds = 3f;
+
         private readonly Dictionary<string, PlantProfile> profilesByCode =
             new Dictionary<string, PlantProfile>(StringComparer.OrdinalIgnoreCase);
 
@@ -117,7 +119,7 @@ namespace Botanism.Profiles
                 }
             }
 
-            // Note to future self: Add a button in the config file to reload profiles without restarting the game. Or a command. Whatever works!
+            // TODO: Add a command or config reload path for plant profiles later.
             Mod.Logger.Notification(
                 "Loaded {0} Botanism plant profiles, {1} plant groups, and {2} exact block matches",
                 profilesByCode.Count,
@@ -174,6 +176,11 @@ namespace Botanism.Profiles
             if (profile.Yield < 1)
             {
                 profile.Yield = 1;
+            }
+
+            if (profile.ExtractionSeconds <= 0)
+            {
+                profile.ExtractionSeconds = DefaultExtractionSeconds;
             }
 
             profilesByCode[profile.Code] = profile;
@@ -250,6 +257,7 @@ namespace Botanism.Profiles
             }
 
             plantGroup.Code = NormalizeCode(plantGroup.Code);
+            plantGroup.TargetBlockCode = NormalizeCode(plantGroup.TargetBlockCode);
             plantGroup.PlantCategory = NormalizeSimpleCode(plantGroup.PlantCategory, "wildFlower");
             plantGroup.PropagationType = NormalizeSimpleCode(plantGroup.PropagationType, "seed");
             plantGroup.PlacementType = NormalizeSimpleCode(plantGroup.PlacementType, "surface");
@@ -282,6 +290,11 @@ namespace Botanism.Profiles
             if (plantGroup.Yield < 1)
             {
                 plantGroup.Yield = 1;
+            }
+
+            if (plantGroup.ExtractionSeconds <= 0)
+            {
+                plantGroup.ExtractionSeconds = DefaultExtractionSeconds;
             }
 
             plantGroups.Add(plantGroup);
@@ -324,9 +337,10 @@ namespace Botanism.Profiles
                     PlacementType = plantGroup.PlacementType,
                     TargetBlockCode = string.IsNullOrWhiteSpace(plantGroup.TargetBlockCode)
                         ? normalizedBlockCode
-                        : NormalizeCode(plantGroup.TargetBlockCode),
+                        : plantGroup.TargetBlockCode,
                     MatchBlockCodes = new[] { normalizedBlockCode },
                     Yield = plantGroup.Yield,
+                    ExtractionSeconds = plantGroup.ExtractionSeconds,
                     ValidTools = plantGroup.ValidTools,
                     Enabled = true
                 };

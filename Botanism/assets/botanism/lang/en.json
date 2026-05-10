@@ -28,5 +28,6 @@
   "block-plantedpropagule": "Planted propagule",
   "block-plantedpropagule-source": "Planted from: {0}",
 
-  "heldhelp-plant": "Plant"
+  "heldhelp-plant": "Plant",
+  "blockhelp-extract": "Extract"
 }
