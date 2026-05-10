@@ -1,5 +1,6 @@
 ﻿using Botanism.Profiles;
 using Vintagestory.API.Common;
+using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
 
 namespace Botanism.Systems
@@ -82,34 +83,69 @@ namespace Botanism.Systems
             // Block id 0 is air.
             sapi.World.BlockAccessor.SetBlock(0, blockSel.Position);
 
-            ItemStack propaguleStack = new ItemStack(propaguleItem, profile.Yield);
+            int yield = profile.Yield;
+
+            if (yield <= 0)
+            {
+                Mod.Logger.Warning(
+                    "Botanism plant profile '{0}' has a yield of {1}. No propagules were dropped.",
+                    profile.Code,
+                    yield
+                );
+
+                return;
+            }
+
+            ItemStack propaguleStack = CreatePropaguleStack(propaguleItem, profile, block);
+
+            SpawnPropaguleDrops(sapi.World, blockSel.Position, propaguleStack, yield);
+
+            Mod.Logger.Notification(
+                "Botanism extraction: {0} extracted {1} {2} from {3}",
+                byPlayer.PlayerName,
+                yield,
+                profile.Code,
+                block.Code
+            );
+        }
+
+        private static ItemStack CreatePropaguleStack(Item propaguleItem, PlantProfile profile, Block sourceBlock)
+        {
+            ItemStack propaguleStack = new ItemStack(propaguleItem, 1);
 
             string targetBlockCode = string.IsNullOrWhiteSpace(profile.TargetBlockCode)
-                ? block.Code.ToString()
+                ? sourceBlock.Code.ToString()
                 : profile.TargetBlockCode;
 
             propaguleStack.Attributes.SetString("profileCode", profile.Code);
             propaguleStack.Attributes.SetString("plantDisplayName", profile.DisplayName);
             propaguleStack.Attributes.SetString("plantCategory", profile.PlantCategory);
-            propaguleStack.Attributes.SetString("sourcePlantCode", block.Code.ToString());
+            propaguleStack.Attributes.SetString("sourcePlantCode", sourceBlock.Code.ToString());
             propaguleStack.Attributes.SetString("targetPlantCode", targetBlockCode);
             propaguleStack.Attributes.SetString("propagationType", profile.PropagationType);
             propaguleStack.Attributes.SetString("placementType", profile.PlacementType);
 
-            bool addedToInventory = byPlayer.InventoryManager.TryGiveItemstack(propaguleStack, true);
+            return propaguleStack;
+        }
 
-            if (!addedToInventory)
-            {
-                sapi.World.SpawnItemEntity(propaguleStack, blockSel.Position);
-            }
+        private static void SpawnPropaguleDrops(IWorldAccessor world, BlockPos position, ItemStack propaguleStack, int quantity)
+        {
+            ItemStack dropStack = propaguleStack.Clone();
+            dropStack.StackSize = quantity;
 
-            Mod.Logger.Notification(
-                "Botanism extraction: {0} extracted {1} {2} from {3}",
-                byPlayer.PlayerName,
-                profile.Yield,
-                profile.Code,
-                block.Code
+            Vec3d dropPosition = new Vec3d(
+                position.X + 0.5 + (world.Rand.NextDouble() - 0.5) * 0.35,
+                position.Y + 0.15,
+                position.Z + 0.5 + (world.Rand.NextDouble() - 0.5) * 0.35
             );
+
+            Vec3d dropVelocity = new Vec3d(
+                (world.Rand.NextDouble() - 0.5) * 0.03,
+                0.03,
+                (world.Rand.NextDouble() - 0.5) * 0.03
+            );
+
+            world.SpawnItemEntity(dropStack, dropPosition, dropVelocity);
         }
 
         private static bool IsPropagationTool(IServerPlayer player, PlantProfile profile)
