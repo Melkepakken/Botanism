@@ -46,11 +46,7 @@
     }
   },
   "maxstacksize": 64,
-  "creativeinventory": {
-    "general": [ "*" ],
-    "items": [ "*" ],
-    "flora": [ "*" ]
-  },
+  "creativeinventory": {},
   "materialDensity": 450,
   "guiTransform": {
     "translation": {

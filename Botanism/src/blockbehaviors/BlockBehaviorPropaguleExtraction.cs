@@ -3,6 +3,7 @@ using Botanism.Profiles;
 using Botanism.Systems;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
+using Vintagestory.API.Common.Entities;
 
 namespace Botanism.BlockBehaviors
 {
@@ -10,6 +11,10 @@ namespace Botanism.BlockBehaviors
     {
         private static readonly AssetLocation ExtractionSound =
             new AssetLocation("game", "sounds/block/leafy-picking");
+
+        private const string ExtractionAnimation = "knifecut";
+        private const float FallbackExtractionSeconds = 1.5f;
+        private const float MinimumExtractionSeconds = 0.1f;
 
         private PlantExtractionService extractionService;
 
@@ -24,62 +29,6 @@ namespace Botanism.BlockBehaviors
             extractionService = api.ModLoader.GetModSystem<PlantExtractionService>();
         }
 
-        public override int GetPlacedBlockInteractionHelpCount(
-            IWorldAccessor world,
-            BlockSelection selection,
-            IPlayer forPlayer,
-            ref EnumHandling handling
-        )
-        {
-            PlantProfile profile = extractionService?.GetProfileForSelection(world, selection);
-
-            if (profile == null)
-            {
-                return 0;
-            }
-
-            ItemStack[] toolStacks = extractionService.GetToolStacksForProfile(world, profile);
-
-            return toolStacks.Length > 0
-                ? 1
-                : 0;
-        }
-
-        public override WorldInteraction[] GetPlacedBlockInteractionHelp(
-            IWorldAccessor world,
-            BlockSelection selection,
-            IPlayer forPlayer,
-            ref EnumHandling handling
-        )
-        {
-            PlantProfile profile = extractionService?.GetProfileForSelection(world, selection);
-
-            if (profile == null)
-            {
-                return Array.Empty<WorldInteraction>();
-            }
-
-            ItemStack[] toolStacks = extractionService.GetToolStacksForProfile(world, profile);
-
-            if (toolStacks.Length == 0)
-            {
-                return Array.Empty<WorldInteraction>();
-            }
-
-            handling = EnumHandling.PreventDefault;
-
-            return new[]
-            {
-                new WorldInteraction
-                {
-                    ActionLangCode = "botanism:blockhelp-extract",
-                    MouseButton = EnumMouseButton.Right,
-                    HotKeyCode = "shift",
-                    Itemstacks = toolStacks
-                }
-            };
-        }
-
         public override bool OnBlockInteractStart(
             IWorldAccessor world,
             IPlayer byPlayer,
@@ -92,19 +41,26 @@ namespace Botanism.BlockBehaviors
                 return false;
             }
 
-            if (!IsHoldingShift(byPlayer))
+            if (!CanStartExtraction(world, byPlayer, blockSel, out _))
             {
                 return false;
             }
 
-            if (!extractionService.CanExtractPlant(world, byPlayer, blockSel, out PlantProfile profile))
+            if (!world.Claims.TryAccess(byPlayer, blockSel.Position, EnumBlockAccessFlags.Use))
             {
                 return false;
             }
 
             handling = EnumHandling.PreventDefault;
 
-            PlayExtractionSound(world, byPlayer, blockSel);
+            world.PlaySoundAt(
+                ExtractionSound,
+                blockSel.Position,
+                0,
+                byPlayer
+            );
+
+            StartExtractionAnimation(world, byPlayer);
 
             return true;
         }
@@ -122,29 +78,18 @@ namespace Botanism.BlockBehaviors
                 return false;
             }
 
-            if (!IsHoldingShift(byPlayer))
+            if (!CanStartExtraction(world, byPlayer, blockSel, out PlantProfile profile))
             {
-                return false;
-            }
-
-            if (!extractionService.CanExtractPlant(world, byPlayer, blockSel, out PlantProfile profile))
-            {
-                return false;
-            }
-
-            if (blockSel == null)
-            {
+                StopExtractionAnimation(byPlayer);
                 return false;
             }
 
             handling = EnumHandling.PreventDefault;
 
-            if (world.Rand.NextDouble() < 0.05)
-            {
-                PlayExtractionSound(world, byPlayer, blockSel);
-            }
+            float extractionSeconds = GetExtractionSeconds(profile);
 
-            float extractionSeconds = Math.Max(0.1f, profile.ExtractionSeconds);
+            StartExtractionAnimation(world, byPlayer);
+            TryPlayHarvestEffects(world, byPlayer, blockSel);
 
             return world.Side == EnumAppSide.Client || secondsUsed < extractionSeconds;
         }
@@ -162,79 +107,182 @@ namespace Botanism.BlockBehaviors
                 return;
             }
 
-            if (!IsHoldingShift(byPlayer))
+            if (!CanStartExtraction(world, byPlayer, blockSel, out PlantProfile profile))
             {
-                return;
-            }
-
-            if (!extractionService.CanExtractPlant(world, byPlayer, blockSel, out PlantProfile profile))
-            {
+                StopExtractionAnimation(byPlayer);
                 return;
             }
 
             handling = EnumHandling.PreventDefault;
 
-            float extractionSeconds = Math.Max(0.1f, profile.ExtractionSeconds);
+            float extractionSeconds = GetExtractionSeconds(profile);
+
+            StopExtractionAnimation(byPlayer);
+
+            if (world.Side != EnumAppSide.Server)
+            {
+                return;
+            }
 
             if (secondsUsed < extractionSeconds - 0.05f)
             {
                 return;
             }
 
-            if (extractionService.TryExtractPlant(world, byPlayer, blockSel))
-            {
-                PlayExtractionSound(world, byPlayer, blockSel);
-            }
+            extractionService.TryExtractPlant(
+                world,
+                byPlayer,
+                blockSel,
+                damageTool: true
+            );
         }
 
-        public override bool OnBlockInteractCancel(
-            float secondsUsed,
+        public override WorldInteraction[] GetPlacedBlockInteractionHelp(
             IWorldAccessor world,
-            IPlayer byPlayer,
-            BlockSelection blockSel,
+            BlockSelection selection,
+            IPlayer forPlayer,
             ref EnumHandling handling
         )
         {
             if (extractionService == null)
             {
-                return true;
+                return Array.Empty<WorldInteraction>();
             }
 
-            if (!IsHoldingShift(byPlayer))
+            PlantProfile profile = extractionService.GetProfileForSelection(world, selection);
+
+            if (profile == null)
             {
-                return true;
+                return Array.Empty<WorldInteraction>();
             }
 
-            if (extractionService.CanExtractPlant(world, byPlayer, blockSel, out PlantProfile profile))
+            ItemStack[] toolStacks = extractionService.GetToolStacksForProfile(world, profile);
+
+            if (toolStacks.Length == 0)
             {
-                handling = EnumHandling.PreventDefault;
+                return Array.Empty<WorldInteraction>();
             }
 
-            return true;
+            return new[]
+            {
+                new WorldInteraction
+                {
+                    ActionLangCode = "botanism:blockhelp-extract",
+                    MouseButton = EnumMouseButton.Right,
+                    Itemstacks = toolStacks
+                }
+            };
         }
 
-        private static bool IsHoldingShift(IPlayer player)
-        {
-            return player?.Entity?.Controls?.ShiftKey == true;
-        }
-
-        private static void PlayExtractionSound(
+        public override int GetPlacedBlockInteractionHelpCount(
             IWorldAccessor world,
-            IPlayer player,
-            BlockSelection blockSel
+            BlockSelection selection,
+            IPlayer forPlayer,
+            ref EnumHandling handling
         )
         {
-            if (blockSel == null)
+            if (extractionService == null)
+            {
+                return 0;
+            }
+
+            PlantProfile profile = extractionService.GetProfileForSelection(world, selection);
+
+            if (profile == null)
+            {
+                return 0;
+            }
+
+            ItemStack[] toolStacks = extractionService.GetToolStacksForProfile(world, profile);
+
+            return toolStacks.Length > 0
+                ? 1
+                : 0;
+        }
+
+        private bool CanStartExtraction(
+            IWorldAccessor world,
+            IPlayer byPlayer,
+            BlockSelection blockSel,
+            out PlantProfile profile
+        )
+        {
+            profile = null;
+
+            if (world == null || byPlayer == null || blockSel == null)
+            {
+                return false;
+            }
+
+            if (extractionService == null)
+            {
+                return false;
+            }
+
+            return extractionService.CanExtractPlant(
+                world,
+                byPlayer,
+                blockSel,
+                out profile
+            );
+        }
+
+        private static float GetExtractionSeconds(PlantProfile profile)
+        {
+            if (profile == null)
+            {
+                return FallbackExtractionSeconds;
+            }
+
+            return Math.Max(MinimumExtractionSeconds, profile.ExtractionSeconds);
+        }
+
+        private static void StartExtractionAnimation(IWorldAccessor world, IPlayer byPlayer)
+        {
+            EntityAgent entity = byPlayer?.Entity;
+
+            if (entity == null)
             {
                 return;
             }
 
-            world.PlaySoundAt(
-                ExtractionSound,
-                blockSel.Position,
-                0,
-                player
-            );
+            if (world.Side == EnumAppSide.Client)
+            {
+                entity.StartAnimation(ExtractionAnimation);
+                (byPlayer as IClientPlayer)?.TriggerFpAnimation(EnumHandInteract.HeldItemAttack);
+            }
+        }
+
+        private static void StopExtractionAnimation(IPlayer byPlayer)
+        {
+            byPlayer?.Entity?.StopAnimation(ExtractionAnimation);
+        }
+
+        private static void TryPlayHarvestEffects(
+            IWorldAccessor world,
+            IPlayer byPlayer,
+            BlockSelection blockSel
+        )
+        {
+            if (world == null || byPlayer == null || blockSel == null)
+            {
+                return;
+            }
+
+            if (world.Rand.NextDouble() < 0.05)
+            {
+                world.PlaySoundAt(
+                    ExtractionSound,
+                    blockSel.Position,
+                    0,
+                    byPlayer
+                );
+            }
+
+            if (world.Side == EnumAppSide.Client)
+            {
+                (byPlayer as IClientPlayer)?.TriggerFpAnimation(EnumHandInteract.HeldItemAttack);
+            }
         }
     }
 }

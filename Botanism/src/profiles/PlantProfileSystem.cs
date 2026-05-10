@@ -8,7 +8,7 @@ namespace Botanism.Profiles
 {
     public class PlantProfileSystem : ModSystem
     {
-        private const float DefaultExtractionSeconds = 3f;
+        private const float DefaultExtractionSeconds = 1.5f;
 
         private readonly Dictionary<string, PlantProfile> profilesByCode =
             new Dictionary<string, PlantProfile>(StringComparer.OrdinalIgnoreCase);

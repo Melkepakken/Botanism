@@ -1,12 +1,12 @@
 {
   "plantGroups": [
     {
-      "code": "exampleflowers:simple-wildflowers",
-      "description": "Example only. Enables simple seed propagation for flower blocks from a fictional mod",
-      "enabled": false,
+      "code": "game:vanilla-flower-safety-net",
+      "description": "Fallback support for vanilla flower blocks that do not have exact Botanism plant profiles",
+      "enabled": true,
 
       "match": {
-        "domain": "exampleflowers",
+        "domain": "game",
         "pathStartsWith": "flower-",
         "pathEndsWith": "-free"
       },

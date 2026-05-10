@@ -14,12 +14,10 @@ namespace Botanism.Systems
         private readonly Dictionary<string, ItemStack[]> toolStacksByToolCode =
             new Dictionary<string, ItemStack[]>(StringComparer.OrdinalIgnoreCase);
 
-        private ICoreAPI api;
         private PlantProfileSystem plantProfiles;
 
         public override void Start(ICoreAPI api)
         {
-            this.api = api;
             plantProfiles = api.ModLoader.GetModSystem<PlantProfileSystem>();
         }
 
@@ -27,6 +25,11 @@ namespace Botanism.Systems
         {
             Block block = GetSelectedBlock(world, blockSel);
 
+            return GetProfileForBlock(block);
+        }
+
+        public PlantProfile GetProfileForBlock(Block block)
+        {
             if (block?.Code == null || plantProfiles == null)
             {
                 return null;
@@ -54,7 +57,35 @@ namespace Botanism.Systems
             return profile.AllowsTool(activeToolCode);
         }
 
+        public bool CanExtractBlockWithTool(
+            Block block,
+            ItemSlot toolSlot,
+            out PlantProfile profile
+        )
+        {
+            profile = GetProfileForBlock(block);
+
+            if (profile == null)
+            {
+                return false;
+            }
+
+            string toolCode = GetToolCode(toolSlot);
+
+            return profile.AllowsTool(toolCode);
+        }
+
         public bool TryExtractPlant(IWorldAccessor world, IPlayer player, BlockSelection blockSel)
+        {
+            return TryExtractPlant(world, player, blockSel, true);
+        }
+
+        public bool TryExtractPlant(
+            IWorldAccessor world,
+            IPlayer player,
+            BlockSelection blockSel,
+            bool damageTool
+        )
         {
             if (!CanExtractPlant(world, player, blockSel, out PlantProfile profile))
             {
@@ -105,7 +136,11 @@ namespace Botanism.Systems
             ItemStack propaguleStack = CreatePropaguleStack(propaguleItem, profile, sourceBlock);
 
             SpawnPropaguleDrop(world, blockSel.Position, propaguleStack, yield);
-            DamageActiveTool(world, player);
+
+            if (damageTool)
+            {
+                DamageActiveTool(world, player);
+            }
 
             Mod.Logger.Notification(
                 "Botanism extraction: {0} extracted {1} {2} from {3}",
@@ -200,11 +235,23 @@ namespace Botanism.Systems
         {
             EnumTool? activeTool = player?.InventoryManager?.ActiveTool;
 
-            return activeTool switch
+            return NormalizeToolCode(activeTool);
+        }
+
+        private static string GetToolCode(ItemSlot toolSlot)
+        {
+            EnumTool? tool = toolSlot?.Itemstack?.Collectible?.GetTool(toolSlot);
+
+            return NormalizeToolCode(tool);
+        }
+
+        private static string NormalizeToolCode(EnumTool? tool)
+        {
+            return tool switch
             {
                 EnumTool.Knife => "knife",
                 EnumTool.Shears => "shears",
-                _ => activeTool?.ToString() ?? ""
+                _ => tool?.ToString() ?? ""
             };
         }
 

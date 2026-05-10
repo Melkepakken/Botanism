@@ -9,7 +9,7 @@
       "targetBlockCode": "game:flower-bluebell-free",
       "matchBlockCodes": [ "game:flower-bluebell-free", "game:flower-bluebell-snow" ],
       "yield": 2,
-      "extractionSeconds": 3,
+      "extractionSeconds": 1.5,
       "validTools": [ "knife" ]
     },
     {
@@ -21,7 +21,7 @@
       "targetBlockCode": "game:flower-catmint-free",
       "matchBlockCodes": [ "game:flower-catmint-free", "game:flower-catmint-snow" ],
       "yield": 2,
-      "extractionSeconds": 3,
+      "extractionSeconds": 1.5,
       "validTools": [ "knife" ]
     },
     {
@@ -33,7 +33,7 @@
       "targetBlockCode": "game:flower-cornflower-free",
       "matchBlockCodes": [ "game:flower-cornflower-free", "game:flower-cornflower-snow" ],
       "yield": 2,
-      "extractionSeconds": 3,
+      "extractionSeconds": 1.5,
       "validTools": [ "knife" ]
     },
     {
@@ -45,7 +45,7 @@
       "targetBlockCode": "game:flower-cowparsley-free",
       "matchBlockCodes": [ "game:flower-cowparsley-free", "game:flower-cowparsley-snow" ],
       "yield": 2,
-      "extractionSeconds": 3,
+      "extractionSeconds": 1.5,
       "validTools": [ "knife" ]
     },
     {
@@ -57,7 +57,7 @@
       "targetBlockCode": "game:flower-daffodil-free",
       "matchBlockCodes": [ "game:flower-daffodil-free", "game:flower-daffodil-snow" ],
       "yield": 2,
-      "extractionSeconds": 3,
+      "extractionSeconds": 1.5,
       "validTools": [ "knife" ]
     },
     {
@@ -69,7 +69,7 @@
       "targetBlockCode": "game:flower-westerngorse-free",
       "matchBlockCodes": [ "game:flower-westerngorse-free", "game:flower-westerngorse-snow" ],
       "yield": 2,
-      "extractionSeconds": 3,
+      "extractionSeconds": 1.5,
       "validTools": [ "knife" ]
     },
     {
@@ -81,7 +81,7 @@
       "targetBlockCode": "game:flower-edelweiss-free",
       "matchBlockCodes": [ "game:flower-edelweiss-free", "game:flower-edelweiss-snow" ],
       "yield": 2,
-      "extractionSeconds": 3,
+      "extractionSeconds": 1.5,
       "validTools": [ "knife" ]
     },
     {
@@ -93,7 +93,7 @@
       "targetBlockCode": "game:flower-forgetmenot-free",
       "matchBlockCodes": [ "game:flower-forgetmenot-free", "game:flower-forgetmenot-snow" ],
       "yield": 2,
-      "extractionSeconds": 3,
+      "extractionSeconds": 1.5,
       "validTools": [ "knife" ]
     },
     {
@@ -105,7 +105,7 @@
       "targetBlockCode": "game:flower-ghostpipewhite-free",
       "matchBlockCodes": [ "game:flower-ghostpipewhite-free", "game:flower-ghostpipewhite-snow" ],
       "yield": 2,
-      "extractionSeconds": 3,
+      "extractionSeconds": 1.5,
       "validTools": [ "knife" ]
     },
     {
@@ -117,7 +117,7 @@
       "targetBlockCode": "game:flower-ghostpipepink-free",
       "matchBlockCodes": [ "game:flower-ghostpipepink-free", "game:flower-ghostpipepink-snow" ],
       "yield": 2,
-      "extractionSeconds": 3,
+      "extractionSeconds": 1.5,
       "validTools": [ "knife" ]
     },
     {
@@ -129,7 +129,7 @@
       "targetBlockCode": "game:flower-ghostpipered-free",
       "matchBlockCodes": [ "game:flower-ghostpipered-free", "game:flower-ghostpipered-snow" ],
       "yield": 2,
-      "extractionSeconds": 3,
+      "extractionSeconds": 1.5,
       "validTools": [ "knife" ]
     },
     {
@@ -141,7 +141,7 @@
       "targetBlockCode": "game:flower-goldenpoppy-free",
       "matchBlockCodes": [ "game:flower-goldenpoppy-free", "game:flower-goldenpoppy-snow" ],
       "yield": 2,
-      "extractionSeconds": 3,
+      "extractionSeconds": 1.5,
       "validTools": [ "knife" ]
     },
     {
@@ -153,7 +153,7 @@
       "targetBlockCode": "game:flower-heather-free",
       "matchBlockCodes": [ "game:flower-heather-free", "game:flower-heather-snow" ],
       "yield": 2,
-      "extractionSeconds": 3,
+      "extractionSeconds": 1.5,
       "validTools": [ "knife" ]
     },
     {
@@ -165,7 +165,7 @@
       "targetBlockCode": "game:flower-horsetail-free",
       "matchBlockCodes": [ "game:flower-horsetail-free", "game:flower-horsetail-snow" ],
       "yield": 2,
-      "extractionSeconds": 3,
+      "extractionSeconds": 1.5,
       "validTools": [ "knife" ]
     },
     {
@@ -177,7 +177,7 @@
       "targetBlockCode": "game:flower-lilyofthevalley-free",
       "matchBlockCodes": [ "game:flower-lilyofthevalley-free", "game:flower-lilyofthevalley-snow" ],
       "yield": 2,
-      "extractionSeconds": 3,
+      "extractionSeconds": 1.5,
       "validTools": [ "knife" ]
     },
     {
@@ -189,7 +189,7 @@
       "targetBlockCode": "game:flower-lupine-blue-free",
       "matchBlockCodes": [ "game:flower-lupine-blue-free", "game:flower-lupine-blue-snow" ],
       "yield": 2,
-      "extractionSeconds": 3,
+      "extractionSeconds": 1.5,
       "validTools": [ "knife" ]
     },
     {
@@ -201,7 +201,43 @@
       "targetBlockCode": "game:flower-lupine-purple-free",
       "matchBlockCodes": [ "game:flower-lupine-purple-free", "game:flower-lupine-purple-snow" ],
       "yield": 2,
-      "extractionSeconds": 3,
+      "extractionSeconds": 1.5,
+      "validTools": [ "knife" ]
+    },
+    {
+      "code": "game:flower-lupine-orange",
+      "displayName": "Orange lupine",
+      "plantCategory": "wildFlower",
+      "propagationType": "seed",
+      "placementType": "surface",
+      "targetBlockCode": "game:flower-lupine-orange-free",
+      "matchBlockCodes": [ "game:flower-lupine-orange-free", "game:flower-lupine-orange-snow" ],
+      "yield": 2,
+      "extractionSeconds": 1.5,
+      "validTools": [ "knife" ]
+    },
+    {
+      "code": "game:flower-lupine-red",
+      "displayName": "Red lupine",
+      "plantCategory": "wildFlower",
+      "propagationType": "seed",
+      "placementType": "surface",
+      "targetBlockCode": "game:flower-lupine-red-free",
+      "matchBlockCodes": [ "game:flower-lupine-red-free", "game:flower-lupine-red-snow" ],
+      "yield": 2,
+      "extractionSeconds": 1.5,
+      "validTools": [ "knife" ]
+    },
+    {
+      "code": "game:flower-lupine-white",
+      "displayName": "White lupine",
+      "plantCategory": "wildFlower",
+      "propagationType": "seed",
+      "placementType": "surface",
+      "targetBlockCode": "game:flower-lupine-white-free",
+      "matchBlockCodes": [ "game:flower-lupine-white-free", "game:flower-lupine-white-snow" ],
+      "yield": 2,
+      "extractionSeconds": 1.5,
       "validTools": [ "knife" ]
     },
     {
@@ -213,7 +249,7 @@
       "targetBlockCode": "game:flower-mugwort-free",
       "matchBlockCodes": [ "game:flower-mugwort-free", "game:flower-mugwort-snow" ],
       "yield": 2,
-      "extractionSeconds": 3,
+      "extractionSeconds": 1.5,
       "validTools": [ "knife" ]
     },
     {
@@ -225,7 +261,7 @@
       "targetBlockCode": "game:flower-orangemallow-free",
       "matchBlockCodes": [ "game:flower-orangemallow-free", "game:flower-orangemallow-snow" ],
       "yield": 2,
-      "extractionSeconds": 3,
+      "extractionSeconds": 1.5,
       "validTools": [ "knife" ]
     },
     {
@@ -237,7 +273,7 @@
       "targetBlockCode": "game:flower-redtopgrass-free",
       "matchBlockCodes": [ "game:flower-redtopgrass-free", "game:flower-redtopgrass-snow" ],
       "yield": 2,
-      "extractionSeconds": 3,
+      "extractionSeconds": 1.5,
       "validTools": [ "knife" ]
     },
     {
@@ -249,7 +285,7 @@
       "targetBlockCode": "game:flower-wilddaisy-free",
       "matchBlockCodes": [ "game:flower-wilddaisy-free", "game:flower-wilddaisy-snow" ],
       "yield": 2,
-      "extractionSeconds": 3,
+      "extractionSeconds": 1.5,
       "validTools": [ "knife" ]
     },
     {
@@ -261,7 +297,7 @@
       "targetBlockCode": "game:flower-woad-free",
       "matchBlockCodes": [ "game:flower-woad-free", "game:flower-woad-snow" ],
       "yield": 2,
-      "extractionSeconds": 3,
+      "extractionSeconds": 1.5,
       "validTools": [ "knife" ]
     }
   ]
