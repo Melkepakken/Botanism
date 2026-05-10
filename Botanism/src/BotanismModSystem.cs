@@ -1,7 +1,7 @@
 ﻿using Botanism.Items;
+using Botanism.BlockEntities;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
-using Vintagestory.API.Config;
 using Vintagestory.API.Server;
 
 namespace Botanism
@@ -11,6 +11,7 @@ namespace Botanism
         public override void Start(ICoreAPI api)
         {
             api.RegisterItemClass("Propagule", typeof(ItemPropagule));
+            api.RegisterBlockEntityClass("PlantedPropagule", typeof(BlockEntityPlantedPropagule));
 
             Mod.Logger.Notification("Botanism loaded");
         }

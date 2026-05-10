@@ -1,0 +1,44 @@
+{
+  "code": "plantedpropagule",
+  "entityclass": "PlantedPropagule",
+  "renderpass": "OpaqueNoCull",
+  "drawtype": "JSON",
+  "shape": { "base": "game:block/plant/crop/default*" },
+  "blockmaterial": "Plant",
+  "textures": {
+    "crop": { "base": "game:block/plant/crop/flax/normal1" }
+  },
+  "randomizeRotations": true,
+  "randomDrawOffset": true,
+  "sideopaque": {
+    "all": false
+  },
+  "sidesolid": {
+    "all": false
+  },
+  "replaceable": 3000,
+  "lightAbsorption": 0,
+  "resistance": 0.5,
+  "drops": [],
+  "collisionbox": null,
+  "selectionbox": {
+    "x1": 0.125,
+    "y1": 0,
+    "z1": 0.125,
+    "x2": 0.875,
+    "y2": 0.25,
+    "z2": 0.875
+  },
+  "sounds": {
+    "place": "block/plant",
+    "break": "block/plant",
+    "hit": "block/plant"
+  },
+  "rainPermeable": false,
+  "materialDensity": 200,
+  "combustibleProps": {
+    "burnTemperature": 600,
+    "burnDuration": 10
+  },
+  "frostable": true
+}

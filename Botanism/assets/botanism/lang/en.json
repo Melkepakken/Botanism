@@ -23,5 +23,10 @@
   "propagule-material-pip": "pips",
   "propagule-material-cutting": "cuttings",
   "propagule-material-division": "divisions",
-  "propagule-material-fragment": "fragments"
+  "propagule-material-fragment": "fragments",
+
+  "block-plantedpropagule": "Planted propagule",
+  "block-plantedpropagule-source": "Planted from: {0}",
+
+  "heldhelp-plant": "Plant"
 }
