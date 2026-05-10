@@ -94,6 +94,7 @@ namespace Botanism.Systems
             propaguleStack.Attributes.SetString("sourcePlantCode", block.Code.ToString());
             propaguleStack.Attributes.SetString("targetPlantCode", targetBlockCode);
             propaguleStack.Attributes.SetString("propagationType", profile.PropagationType);
+            propaguleStack.Attributes.SetString("placementType", profile.PlacementType);
 
             bool addedToInventory = byPlayer.InventoryManager.TryGiveItemstack(propaguleStack, true);
 
