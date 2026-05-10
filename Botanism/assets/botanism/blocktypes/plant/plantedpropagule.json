@@ -30,9 +30,9 @@
     "z2": 0.875
   },
   "sounds": {
-    "place": "block/plant",
-    "break": "block/plant",
-    "hit": "block/plant"
+    "place": "game:block/plant",
+    "break": "game:block/plant",
+    "hit": "game:block/plant"
   },
   "rainPermeable": false,
   "materialDensity": 200,

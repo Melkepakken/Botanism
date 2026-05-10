@@ -8,6 +8,9 @@ namespace Botanism.BlockBehaviors
 {
     public class BlockBehaviorPropaguleExtraction : BlockBehavior
     {
+        private static readonly AssetLocation ExtractionSound =
+            new AssetLocation("game", "sounds/block/leafy-picking");
+
         private PlantExtractionService extractionService;
 
         public BlockBehaviorPropaguleExtraction(Block block) : base(block)
@@ -101,6 +104,8 @@ namespace Botanism.BlockBehaviors
 
             handling = EnumHandling.PreventDefault;
 
+            PlayExtractionSound(world, byPlayer, blockSel);
+
             return true;
         }
 
@@ -127,11 +132,21 @@ namespace Botanism.BlockBehaviors
                 return false;
             }
 
+            if (blockSel == null)
+            {
+                return false;
+            }
+
             handling = EnumHandling.PreventDefault;
+
+            if (world.Rand.NextDouble() < 0.05)
+            {
+                PlayExtractionSound(world, byPlayer, blockSel);
+            }
 
             float extractionSeconds = Math.Max(0.1f, profile.ExtractionSeconds);
 
-            return secondsUsed < extractionSeconds;
+            return world.Side == EnumAppSide.Client || secondsUsed < extractionSeconds;
         }
 
         public override void OnBlockInteractStop(
@@ -161,12 +176,15 @@ namespace Botanism.BlockBehaviors
 
             float extractionSeconds = Math.Max(0.1f, profile.ExtractionSeconds);
 
-            if (secondsUsed < extractionSeconds)
+            if (secondsUsed < extractionSeconds - 0.05f)
             {
                 return;
             }
 
-            extractionService.TryExtractPlant(world, byPlayer, blockSel);
+            if (extractionService.TryExtractPlant(world, byPlayer, blockSel))
+            {
+                PlayExtractionSound(world, byPlayer, blockSel);
+            }
         }
 
         public override bool OnBlockInteractCancel(
@@ -198,6 +216,25 @@ namespace Botanism.BlockBehaviors
         private static bool IsHoldingShift(IPlayer player)
         {
             return player?.Entity?.Controls?.ShiftKey == true;
+        }
+
+        private static void PlayExtractionSound(
+            IWorldAccessor world,
+            IPlayer player,
+            BlockSelection blockSel
+        )
+        {
+            if (blockSel == null)
+            {
+                return;
+            }
+
+            world.PlaySoundAt(
+                ExtractionSound,
+                blockSel.Position,
+                0,
+                player
+            );
         }
     }
 }
